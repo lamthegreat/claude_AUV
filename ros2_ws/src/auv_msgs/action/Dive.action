@@ -1,0 +1,14 @@
+# Goal
+float32 target_depth_m
+float32 duration_s
+float32 depth_tolerance_m
+---
+# Result
+bool success
+float32 actual_depth_m
+string message
+---
+# Feedback
+float32 current_depth_m
+float32 depth_error_m
+float32 elapsed_s

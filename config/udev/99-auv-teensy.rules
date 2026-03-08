@@ -1,0 +1,33 @@
+# AUV Teensy udev rules
+# Assigns persistent device names based on USB serial number so that
+# /dev/auv_sensor_hub and /dev/auv_motor_ctrl are always the correct Teensy.
+#
+# HOW TO FIND YOUR SERIAL NUMBERS:
+#   1. Plug in Teensy 4.1 (sensor hub)
+#   2. Run: udevadm info -a -n /dev/ttyACM0 | grep serial
+#      (adjust ttyACM0 to whatever shows up in `ls /dev/ttyACM*`)
+#   3. Copy the ATTRS{serial} value into SENSOR_HUB_SERIAL below
+#   4. Unplug, plug in Teensy 4.0 (motor controller), repeat
+#   5. Copy its serial into MOTOR_CTRL_SERIAL below
+#
+# AFTER EDITING:
+#   sudo cp config/udev/99-auv-teensy.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules
+#   sudo udevadm trigger
+#
+# VERIFY:
+#   ls -la /dev/auv_*
+#   # Should show: /dev/auv_sensor_hub -> ttyACM0 (or similar)
+#   #              /dev/auv_motor_ctrl -> ttyACM1
+
+# Teensy 4.1 — Sensor Hub
+# REPLACE <SENSOR_HUB_SERIAL> with the actual serial number
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0483", \
+  ATTRS{serial}=="<SENSOR_HUB_SERIAL>", \
+  SYMLINK+="auv_sensor_hub", MODE="0666", GROUP="dialout"
+
+# Teensy 4.0 — Motor Controller
+# REPLACE <MOTOR_CTRL_SERIAL> with the actual serial number
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="0483", \
+  ATTRS{serial}=="<MOTOR_CTRL_SERIAL>", \
+  SYMLINK+="auv_motor_ctrl", MODE="0666", GROUP="dialout"

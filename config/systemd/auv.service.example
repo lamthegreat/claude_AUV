@@ -1,0 +1,27 @@
+# AUV Auto-Start Service (Example)
+# Copy to /etc/systemd/system/auv.service and enable with:
+#   sudo systemctl enable auv.service
+#   sudo systemctl start  auv.service
+#
+# NOTE: Only enable auto-start once the system is well-tested.
+#       Manual startup is safer during development.
+
+[Unit]
+Description=AUV ROS2 Stack
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/repos/claude_AUV
+Environment="ROS_DOMAIN_ID=42"
+ExecStartPre=/bin/bash -c 'source /opt/ros/jazzy/setup.bash && \
+  source /home/pi/repos/claude_AUV/ros2_ws/install/setup.bash'
+ExecStart=/bin/bash -c 'source /opt/ros/jazzy/setup.bash && \
+  source /home/pi/repos/claude_AUV/ros2_ws/install/setup.bash && \
+  ros2 launch auv_bringup auv_full.launch.py'
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

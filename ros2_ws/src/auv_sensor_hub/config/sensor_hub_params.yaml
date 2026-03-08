@@ -1,0 +1,7 @@
+sensor_hub_node:
+  ros__parameters:
+    namespace: auv
+    # Seconds before a watchdog warning is issued for stale IMU data
+    imu_timeout_s: 1.0
+    # Seconds before a watchdog warning for stale depth data (future)
+    depth_timeout_s: 2.0

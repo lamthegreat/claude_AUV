@@ -1,0 +1,9 @@
+state_estimator_node:
+  ros__parameters:
+    namespace: auv
+    publish_rate_hz: 50.0
+    base_frame: base_link
+    odom_frame: odom
+    # Future EKF parameters (for robot_localization integration)
+    # process_noise_covariance: [...]
+    # initial_estimate_covariance: [...]

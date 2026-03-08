@@ -1,0 +1,8 @@
+# System-wide parameters shared across nodes.
+# Individual node params are in their own package config/ directories.
+
+# ROS domain ID — set this in your shell: export ROS_DOMAIN_ID=42
+ros_domain_id: 42
+
+# AUV namespace used by all nodes
+auv_namespace: auv

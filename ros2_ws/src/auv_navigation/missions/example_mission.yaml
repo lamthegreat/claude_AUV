@@ -1,0 +1,20 @@
+# Example AUV Mission
+# Format: sequential list of steps, each with a type and parameters.
+# Types: dive, surface, waypoint, hold, end
+
+mission:
+  name: basic_dive_test
+  description: Dive to 1m, hold 10s, surface.
+  steps:
+    - type: dive
+      target_depth_m: 1.0
+      depth_tolerance_m: 0.1
+      timeout_s: 30.0
+
+    - type: hold
+      duration_s: 10.0
+
+    - type: surface
+      timeout_s: 30.0
+
+    - type: end

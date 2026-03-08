@@ -1,0 +1,29 @@
+# Thruster Allocation Matrix — Vectored 6-DOF (BlueROV2 Heavy style)
+#
+# All 6 thrusters angled at 45° to provide full 6-DOF control authority.
+# 4 diagonal horizontal + 2 vertical, all contributing to multiple DOFs.
+#
+# This is a TEMPLATE — values must be measured from your actual thruster
+# positions and angles using a proper TAM derivation tool.
+#
+# Columns: [T1, T2, T3, T4, T5, T6]
+# Rows:    [Fx, Fy, Fz, Mx, My, Mz]
+
+thruster_allocation:
+  num_thrusters: 6
+  thruster_names: [t1_fl, t2_fr, t3_rl, t4_rr, t5_vf, t6_vr]
+
+  pwm_neutral_us: 1500
+  pwm_min_us: 1100
+  pwm_max_us: 1900
+  max_thrust_n: 3.0
+
+  # PLACEHOLDER — replace with values derived from your geometry
+  allocation_matrix:
+  #   T1      T2      T3      T4      T5      T6
+    - [ 0.707,  0.707, -0.707, -0.707,  0.000,  0.000]  # Fx
+    - [-0.707,  0.707,  0.707, -0.707,  0.000,  0.000]  # Fy
+    - [ 0.000,  0.000,  0.000,  0.000,  1.000,  1.000]  # Fz
+    - [ 0.000,  0.000,  0.000,  0.000,  0.200, -0.200]  # Mx
+    - [ 0.100, -0.100,  0.100, -0.100,  0.000,  0.000]  # My
+    - [-0.500,  0.500,  0.500, -0.500,  0.000,  0.000]  # Mz

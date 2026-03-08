@@ -1,0 +1,9 @@
+safety_monitor_node:
+  ros__parameters:
+    namespace: auv
+    # Seconds of IMU silence before emergency surface
+    imu_timeout_s: 2.0
+    # Maximum allowable depth in meters before emergency surface
+    max_depth_m: 10.0
+    # Safety check rate
+    check_rate_hz: 5.0

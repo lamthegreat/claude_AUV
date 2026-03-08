@@ -1,0 +1,6 @@
+# Control mode: 0=MANUAL, 1=DEPTH_HOLD, 2=HEADING_HOLD, 3=FULL_AUTO
+uint8 mode
+---
+bool success
+uint8 previous_mode
+string message

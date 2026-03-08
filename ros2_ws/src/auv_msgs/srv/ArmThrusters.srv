@@ -1,0 +1,6 @@
+bool enable
+# Reason must be non-empty to arm (logged for safety audit trail)
+string reason
+---
+bool success
+string message

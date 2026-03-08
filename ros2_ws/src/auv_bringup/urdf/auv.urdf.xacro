@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!--
+  AUV Robot Description (URDF/Xacro)
+
+  Defines the physical links and joints of the AUV.
+  Thruster link positions should be updated once the frame geometry is finalized.
+
+  TF tree:
+    map → odom → base_link → imu_link
+                            → thruster_1 ... thruster_6
+
+  TODO: Fill in actual thruster positions and orientations
+        once the frame CAD/design is complete.
+-->
+<robot name="auv" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Base link (center of buoyancy / geometric center of hull) -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.4 0.2 0.15"/>
+      </geometry>
+      <material name="dark_gray">
+        <color rgba="0.2 0.2 0.2 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.4 0.2 0.15"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <!-- Approximate: 3 kg, box distribution. Update with measured values. -->
+      <mass value="3.0"/>
+      <inertia ixx="0.02" ixy="0" ixz="0"
+               iyy="0.05" iyz="0"
+               izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- IMU link — position of BNO085 on Teensy 4.1 board -->
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <!-- TODO: measure actual IMU mounting offset -->
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="imu_link"/>
+
+  <!-- Thruster links (placeholder positions — update with actual frame geometry) -->
+  <xacro:macro name="thruster_link" params="name x y z roll pitch yaw">
+    <joint name="${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_link"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+    <link name="${name}_link"/>
+  </xacro:macro>
+
+  <!-- 4 horizontal thrusters at 45° (h4_v2 config placeholder) -->
+  <xacro:thruster_link name="thruster_fl" x=" 0.15" y="-0.10" z="0" roll="0" pitch="0" yaw=" 0.785"/>
+  <xacro:thruster_link name="thruster_fr" x=" 0.15" y=" 0.10" z="0" roll="0" pitch="0" yaw="-0.785"/>
+  <xacro:thruster_link name="thruster_rl" x="-0.15" y="-0.10" z="0" roll="0" pitch="0" yaw="-0.785"/>
+  <xacro:thruster_link name="thruster_rr" x="-0.15" y=" 0.10" z="0" roll="0" pitch="0" yaw=" 0.785"/>
+
+  <!-- 2 vertical thrusters -->
+  <xacro:thruster_link name="thruster_vf" x=" 0.10" y="0" z="0.05" roll="0" pitch="1.5708" yaw="0"/>
+  <xacro:thruster_link name="thruster_vr" x="-0.10" y="0" z="0.05" roll="0" pitch="1.5708" yaw="0"/>
+
+</robot>

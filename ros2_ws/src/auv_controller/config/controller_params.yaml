@@ -1,0 +1,15 @@
+controller_node:
+  ros__parameters:
+    namespace: auv
+    publish_rate_hz: 50.0
+    # Depth PID gains — tune in pool (start conservative)
+    depth_kp: 5.0
+    depth_ki: 0.1
+    depth_kd: 1.0
+    # Heading PID gains
+    heading_kp: 3.0
+    heading_ki: 0.05
+    heading_kd: 0.5
+    # Output wrench limits (Newtons / Newton-metres)
+    max_force_n: 10.0
+    max_torque_nm: 5.0

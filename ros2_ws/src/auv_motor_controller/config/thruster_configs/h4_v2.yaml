@@ -1,0 +1,38 @@
+# Thruster Allocation Matrix — 4 Horizontal + 2 Vertical
+#
+# Layout (top view, thrusters at 45° to body axes):
+#
+#   FL ↖  ↗ FR
+#        ×
+#   RL ↙  ↘ RR
+#
+# + VF (vertical front) and VR (vertical rear) pointing up
+#
+# Body frame: X=forward, Y=left, Z=up  (ROS convention)
+# Positive thrust = thruster pushes vehicle in +axis direction
+#
+# Columns: [FL, FR, RL, RR, VF, VR]
+# Rows:    [Fx, Fy, Fz, Mx, My, Mz]
+
+thruster_allocation:
+  num_thrusters: 6
+  thruster_names: [front_left, front_right, rear_left, rear_right, vert_front, vert_rear]
+
+  pwm_neutral_us: 1500
+  pwm_min_us: 1100
+  pwm_max_us: 1900
+
+  # Maximum thrust per motor in Newtons (used for normalization)
+  # DI 2205-2207 ~3N at max throttle in water — tune after thrust testing
+  max_thrust_n: 3.0
+
+  # TAM: each row is a DOF, each column is a thruster
+  # Values show how much each thruster contributes to each DOF (normalized units)
+  allocation_matrix:
+  #   FL      FR      RL      RR      VF      VR
+    - [ 0.707,  0.707, -0.707, -0.707,  0.000,  0.000]  # Fx (surge)
+    - [-0.707,  0.707,  0.707, -0.707,  0.000,  0.000]  # Fy (sway)
+    - [ 0.000,  0.000,  0.000,  0.000,  1.000,  1.000]  # Fz (heave)
+    - [ 0.000,  0.000,  0.000,  0.000,  0.200, -0.200]  # Mx (roll) — vert thruster spacing
+    - [ 0.000,  0.000,  0.000,  0.000,  0.000,  0.000]  # My (pitch) — not controllable
+    - [-0.500,  0.500,  0.500, -0.500,  0.000,  0.000]  # Mz (yaw)

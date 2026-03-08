@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>auv_sensor_hub</name>
+  <version>0.1.0</version>
+  <description>
+    Pi-side ROS2 bridge node for the Teensy 4.1 sensor hub.
+    Monitors incoming microROS data (IMU, depth) and republishes
+    with validation and diagnostics.
+  </description>
+  <maintainer email="jnlamoureux@gmail.com">AUV Developer</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>auv_msgs</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,8 @@
+int32 num_thrusters
+# Flattened row-major allocation matrix: (6 DOF) x (num_thrusters)
+# Rows: [Fx, Fy, Fz, Mx, My, Mz], columns: thrusters
+float64[] allocation_matrix
+string[] thruster_names
+---
+bool success
+string message

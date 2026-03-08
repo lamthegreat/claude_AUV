@@ -1,0 +1,10 @@
+motor_controller_node:
+  ros__parameters:
+    namespace: auv
+    # Path to thruster allocation config YAML (absolute or relative to share dir)
+    # Set this to the appropriate config for your thruster arrangement
+    thruster_config_path: ''
+    # Milliseconds of silence on /auv/control/wrench_output before neutral PWM is sent
+    command_timeout_ms: 200
+    # Rate at which thruster commands are published
+    publish_rate_hz: 50.0

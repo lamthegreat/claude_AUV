@@ -1,0 +1,14 @@
+# Goal
+geometry_msgs/PoseStamped target_pose
+float32 position_tolerance_m
+float32 heading_tolerance_deg
+---
+# Result
+bool success
+geometry_msgs/Pose final_pose
+string message
+---
+# Feedback
+float32 distance_remaining_m
+float32 heading_error_deg
+float32 elapsed_s
