@@ -130,10 +130,10 @@ static void cb_imu(rcl_timer_t* /*timer*/, int64_t /*last*/) {
     // Fill orientation covariance diagonal from datasheet specs + real-time report.
     // covariance[0] > 0 signals to consumers that the matrix is valid (not unknown).
     // Off-diagonal terms remain 0 (no cross-axis correlation modelled).
-    float ha = d.heading_accuracy_rad;
+    const double YAW_VAR_RAD2 = (double)d.heading_accuracy_rad * d.heading_accuracy_rad;
     msg_imu.orientation_covariance[0] = PITCH_ROLL_VAR_RAD2;  // roll:  BNO085 datasheet 2° dynamic
     msg_imu.orientation_covariance[4] = PITCH_ROLL_VAR_RAD2;  // pitch: BNO085 datasheet 2° dynamic
-    msg_imu.orientation_covariance[8] = ha * ha;               // yaw:   real-time heading_accuracy_rad²
+    msg_imu.orientation_covariance[8] = YAW_VAR_RAD2;         // yaw:   real-time heading_accuracy_rad²
 
     rcl_publish(&pub_imu_raw, &msg_imu, nullptr);
 }
