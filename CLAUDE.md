@@ -75,3 +75,11 @@ All AUV topics live under `/auv/`. Examples:
 - Log at `INFO` for state changes, `DEBUG` for per-cycle data
 - ROS2 package names: `auv_<subsystem>` (snake_case)
 - Firmware files: `<subsystem>.<ext>` (snake_case)
+
+## Testing
+- Write code that is unit-testable: extract critical logic into pure functions or classes that take plain data and return plain data, keeping ROS2 I/O (publishers, subscribers, timers) separate from business logic
+- Include unit tests for all critical logic: control math, thruster allocation, state estimation filters, safety watchdog conditions, sensor parsing
+- Tests live in `ros2_ws/src/<package>/test/` and use `pytest` (Python) or `gtest` (C++)
+- Test files are named `test_<module>.py` and registered in `CMakeLists.txt` / `setup.cfg`
+- Run tests with: `colcon test --packages-select <package> && colcon test-result --verbose`
+- Do not mock ROS2 infrastructure when the logic under test does not require it — pass values directly to the function
