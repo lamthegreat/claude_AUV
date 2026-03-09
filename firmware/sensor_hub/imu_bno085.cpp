@@ -10,6 +10,7 @@ static constexpr uint32_t INTERVAL_GYRO_US  =  5000;  // 200 Hz
 static constexpr uint32_t INTERVAL_ACCEL_US =  5000;  // 200 Hz
 static constexpr uint32_t INTERVAL_MAG_US   = 10000;  // 100 Hz
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 Bno085Driver::Bno085Driver() : _bno(-1) {
     // -1 passed to Adafruit_BNO08x means "no reset pin managed by library"

@@ -6,6 +6,12 @@
 
 #include "micro_ros_config.h"
 
+// BNO085 datasheet typical pitch/roll accuracy: ~1° static, ~2° dynamic.
+// Using the dynamic (conservative) spec: (2° × π/180)² ≈ 1.22e-3 rad²
+// Use for orientation_covariance roll [0] and pitch [4] diagonal elements.
+// Yaw [8] is set per-cycle from the real-time heading_accuracy_rad report.
+static constexpr double PITCH_ROLL_VAR_RAD2 = 1.22e-3;  // (2° RMS)²
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ImuData — snapshot of all sensor readings from one poll cycle
 // ─────────────────────────────────────────────────────────────────────────────

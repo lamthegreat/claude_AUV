@@ -127,14 +127,13 @@ static void cb_imu(rcl_timer_t* /*timer*/, int64_t /*last*/) {
     msg_imu.linear_acceleration.y = d.accel_y;
     msg_imu.linear_acceleration.z = d.accel_z;
 
-    // Encode heading_accuracy_rad in orientation_covariance[8] (yaw variance slot).
-    // covariance[0] is kept at a small positive value (not -1) so consumers know
-    // the matrix is valid. The Pi-side sensor_hub_node reads [8] to populate
-    // ImuExtended.heading_accuracy_rad. All off-diagonal terms remain 0.
+    // Fill orientation covariance diagonal from datasheet specs + real-time report.
+    // covariance[0] > 0 signals to consumers that the matrix is valid (not unknown).
+    // Off-diagonal terms remain 0 (no cross-axis correlation modelled).
     float ha = d.heading_accuracy_rad;
-    msg_imu.orientation_covariance[0] = 0.001f;  // pitch/roll: small known variance
-    msg_imu.orientation_covariance[4] = 0.001f;
-    msg_imu.orientation_covariance[8] = ha * ha;  // yaw: BNO085 heading accuracy²
+    msg_imu.orientation_covariance[0] = PITCH_ROLL_VAR_RAD2;  // roll:  BNO085 datasheet 2° dynamic
+    msg_imu.orientation_covariance[4] = PITCH_ROLL_VAR_RAD2;  // pitch: BNO085 datasheet 2° dynamic
+    msg_imu.orientation_covariance[8] = ha * ha;               // yaw:   real-time heading_accuracy_rad²
 
     rcl_publish(&pub_imu_raw, &msg_imu, nullptr);
 }
