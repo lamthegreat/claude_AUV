@@ -130,6 +130,18 @@ class SensorHubNode(Node):
 
         self._pub_imu_ext.publish(ext)
 
+        # Calibration status debug log (mirrors the old _imu_extended_callback behaviour)
+        if ext.fully_calibrated:
+            self.get_logger().debug('BNO085 fully calibrated.')
+        else:
+            self.get_logger().debug(
+                f'BNO085 calib: sys={ext.calibration_system} '
+                f'gyro={ext.calibration_gyro} '
+                f'accel={ext.calibration_accel} '
+                f'mag={ext.calibration_mag} '
+                f'heading_accuracy={ext.heading_accuracy_rad:.3f} rad'
+            )
+
     def _watchdog_callback(self):
         if self._last_imu_stamp is None:
             self.get_logger().warn('No IMU data received yet. Is the microROS agent running?')
