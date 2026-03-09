@@ -3,15 +3,15 @@ Sensor Hub Bridge Node
 
 Pi-side ROS2 bridge for the Teensy 4.1 sensor hub (microROS node).
 Subscribes to raw sensor data published by the Teensy over microROS,
-validates it, and republishes with diagnostics.
+assembles ImuExtended, and publishes it for downstream nodes.
 
 Subscriptions (from Teensy 4.1 via microROS agent):
-  /auv/sensors/imu/raw       sensor_msgs/Imu
-  /auv/sensors/imu/extended  auv_msgs/ImuExtended
+  /auv/sensors/imu/raw       sensor_msgs/Imu        (9-DOF ARVR, heading_accuracy in cov[8])
+  /auv/sensors/imu/game_rv   sensor_msgs/Imu        (6-DOF Game RV, no magnetometer)
+  /auv/sensors/imu/magnetic_field  sensor_msgs/MagneticField
 
 Publications:
-  /auv/sensors/imu/raw       sensor_msgs/Imu        (pass-through + watchdog)
-  /auv/sensors/imu/extended  auv_msgs/ImuExtended   (pass-through + watchdog)
+  /auv/sensors/imu/extended  auv_msgs/ImuExtended   (assembled from raw + game_rv)
 
 TODO (Phase 2 - Sensor Hub Firmware):
   - Add depth sensor subscription when Teensy firmware supports it
@@ -19,11 +19,13 @@ TODO (Phase 2 - Sensor Hub Firmware):
   - Add IMU calibration service to trigger BNO085 save
 """
 
+import math
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, MagneticField
 from auv_msgs.msg import ImuExtended
 
 
@@ -39,6 +41,10 @@ class SensorHubNode(Node):
         self._imu_timeout_s = self.get_parameter('imu_timeout_s').value
         self._last_imu_stamp = None
 
+        # Latest messages from each Teensy topic
+        self._latest_game_rv: Imu | None = None
+        self._latest_mag: MagneticField | None = None
+
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
@@ -52,11 +58,24 @@ class SensorHubNode(Node):
             self._imu_raw_callback,
             qos,
         )
-        self._sub_imu_ext = self.create_subscription(
+        self._sub_game_rv = self.create_subscription(
+            Imu,
+            f'/{ns}/sensors/imu/game_rv',
+            self._game_rv_callback,
+            qos,
+        )
+        self._sub_mag = self.create_subscription(
+            MagneticField,
+            f'/{ns}/sensors/imu/magnetic_field',
+            self._mag_callback,
+            qos,
+        )
+
+        # Publication — assembled ImuExtended for state estimator and other consumers
+        self._pub_imu_ext = self.create_publisher(
             ImuExtended,
             f'/{ns}/sensors/imu/extended',
-            self._imu_extended_callback,
-            qos,
+            10,
         )
 
         # Watchdog timer — warns if IMU data stops arriving
@@ -64,19 +83,52 @@ class SensorHubNode(Node):
 
         self.get_logger().info('Sensor hub node started. Waiting for microROS agent...')
 
+    def _game_rv_callback(self, msg: Imu):
+        self._latest_game_rv = msg
+
+    def _mag_callback(self, msg: MagneticField):
+        self._latest_mag = msg
+
     def _imu_raw_callback(self, msg: Imu):
         self._last_imu_stamp = self.get_clock().now()
 
-    def _imu_extended_callback(self, msg: ImuExtended):
-        if msg.fully_calibrated:
-            self.get_logger().debug('BNO085 fully calibrated.')
+        ext = ImuExtended()
+        ext.header = msg.header
+
+        # 9-DOF ARVR orientation (absolute heading, mag-referenced)
+        ext.orientation = msg.orientation
+        ext.orientation_covariance = msg.orientation_covariance
+
+        # 6-DOF Game RV orientation (relative heading, mag-immune)
+        if self._latest_game_rv is not None:
+            ext.game_rv_orientation = self._latest_game_rv.orientation
         else:
-            self.get_logger().debug(
-                f'BNO085 calib: sys={msg.calibration_system} '
-                f'gyro={msg.calibration_gyro} '
-                f'accel={msg.calibration_accel} '
-                f'mag={msg.calibration_mag}'
-            )
+            # Identity quaternion until first game_rv message arrives
+            ext.game_rv_orientation.w = 1.0
+
+        # Decode heading_accuracy_rad from orientation_covariance[8].
+        # Firmware sets cov[8] = heading_accuracy_rad^2 (yaw variance slot).
+        # cov[0] > 0 indicates the matrix is valid (not the REP-145 "unknown" signal).
+        cov8 = msg.orientation_covariance[8]
+        if msg.orientation_covariance[0] > 0.0 and cov8 >= 0.0:
+            ext.heading_accuracy_rad = math.sqrt(cov8)
+        else:
+            ext.heading_accuracy_rad = 0.0
+
+        ext.angular_velocity = msg.angular_velocity
+        ext.linear_acceleration = msg.linear_acceleration
+
+        # Calibration fields: BNO085 status is not transmitted in sensor_msgs/Imu.
+        # Leave at 0 (unreliable) until a dedicated calibration topic is added.
+        # heading_accuracy_rad and game_rv fallback are sufficient for selection.
+        ext.calibration_rv = 0
+        ext.calibration_system = 0
+        ext.calibration_gyro = 0
+        ext.calibration_accel = 0
+        ext.calibration_mag = 0
+        ext.fully_calibrated = False
+
+        self._pub_imu_ext.publish(ext)
 
     def _watchdog_callback(self):
         if self._last_imu_stamp is None:

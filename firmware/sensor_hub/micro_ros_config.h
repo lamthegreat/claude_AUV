@@ -17,6 +17,7 @@
 #define TOPIC_IMU_RAW       "sensors/imu/raw"
 #define TOPIC_IMU_EXTENDED  "sensors/imu/extended"
 #define TOPIC_IMU_MAG       "sensors/imu/magnetic_field"
+#define TOPIC_GAME_RV       "sensors/imu/game_rv"
 #define TOPIC_DEPTH         "sensors/depth"  // future
 
 // Publish rates

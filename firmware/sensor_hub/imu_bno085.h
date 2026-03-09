@@ -32,9 +32,19 @@ struct ImuData {
     float mag_y;
     float mag_z;
 
+    // Game Rotation Vector quaternion (ROS convention: x,y,z,w)
+    // 6-DOF: gyro + accel only — no magnetometer, no absolute heading reference.
+    // Immune to magnetic interference from motors/ESCs. Use as fallback when
+    // heading_accuracy_rad is large or calib_mag < 2.
+    float game_quat_i;   // x
+    float game_quat_j;   // y
+    float game_quat_k;   // z
+    float game_quat_real; // w
+
     // Per-sensor calibration accuracy (0=unreliable, 1=low, 2=med, 3=high)
     // These come from the sh2_SensorValue_t.status field on each report.
-    uint8_t calib_rv;    // ARVR stabilized rotation vector
+    uint8_t calib_rv;       // ARVR stabilized rotation vector (9-DOF)
+    uint8_t calib_game_rv;  // Game rotation vector (6-DOF)
     uint8_t calib_gyro;
     uint8_t calib_accel;
     uint8_t calib_mag;

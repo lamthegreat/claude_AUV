@@ -61,14 +61,17 @@ static bool calibration_mode = false;
 // microROS objects (used only in normal mode)
 rcl_publisher_t     pub_imu_raw;
 rcl_publisher_t     pub_imu_mag;
+rcl_publisher_t     pub_game_rv;
 sensor_msgs__msg__Imu            msg_imu;
 sensor_msgs__msg__MagneticField  msg_mag;
+sensor_msgs__msg__Imu            msg_game_rv;
 rclc_support_t    support;
 rcl_allocator_t   allocator;
 rcl_node_t        node;
 rclc_executor_t   executor;
 rcl_timer_t       timer_imu;
 rcl_timer_t       timer_mag;
+rcl_timer_t       timer_game_rv;
 
 // Static frame-ID strings (lifetime must exceed msg use)
 static char frame_id_buf[] = "imu_link";
@@ -124,6 +127,15 @@ static void cb_imu(rcl_timer_t* /*timer*/, int64_t /*last*/) {
     msg_imu.linear_acceleration.y = d.accel_y;
     msg_imu.linear_acceleration.z = d.accel_z;
 
+    // Encode heading_accuracy_rad in orientation_covariance[8] (yaw variance slot).
+    // covariance[0] is kept at a small positive value (not -1) so consumers know
+    // the matrix is valid. The Pi-side sensor_hub_node reads [8] to populate
+    // ImuExtended.heading_accuracy_rad. All off-diagonal terms remain 0.
+    float ha = d.heading_accuracy_rad;
+    msg_imu.orientation_covariance[0] = 0.001f;  // pitch/roll: small known variance
+    msg_imu.orientation_covariance[4] = 0.001f;
+    msg_imu.orientation_covariance[8] = ha * ha;  // yaw: BNO085 heading accuracy²
+
     rcl_publish(&pub_imu_raw, &msg_imu, nullptr);
 }
 
@@ -140,6 +152,23 @@ static void cb_mag(rcl_timer_t* /*timer*/, int64_t /*last*/) {
     msg_mag.magnetic_field.z = d.mag_z;
 
     rcl_publish(&pub_imu_mag, &msg_mag, nullptr);
+}
+
+static void cb_game_rv(rcl_timer_t* /*timer*/, int64_t /*last*/) {
+    const ImuData& d = imu.data();
+    if (!d.valid) return;
+
+    uint32_t now_ms = millis();
+    msg_game_rv.header.stamp.sec     = now_ms / 1000;
+    msg_game_rv.header.stamp.nanosec = (now_ms % 1000) * 1000000UL;
+
+    // 6-DOF Game Rotation Vector (ROS: x=i, y=j, z=k, w=real)
+    msg_game_rv.orientation.x = d.game_quat_i;
+    msg_game_rv.orientation.y = d.game_quat_j;
+    msg_game_rv.orientation.z = d.game_quat_k;
+    msg_game_rv.orientation.w = d.game_quat_real;
+
+    rcl_publish(&pub_game_rv, &msg_game_rv, nullptr);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -165,6 +194,11 @@ static void setup_normal_mode() {
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, MagneticField),
         TOPIC_IMU_MAG));
 
+    RCCHECK(rclc_publisher_init_best_effort(
+        &pub_game_rv, &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        TOPIC_GAME_RV));
+
     // Timer periods in nanoseconds
     RCCHECK(rclc_timer_init_default(
         &timer_imu, &support,
@@ -175,14 +209,21 @@ static void setup_normal_mode() {
         RCL_MS_TO_NS(1000 / MAG_PUBLISH_HZ),
         cb_mag));
 
-    // Executor: 2 timer handles
-    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+    RCCHECK(rclc_timer_init_default(
+        &timer_game_rv, &support,
+        RCL_MS_TO_NS(1000 / IMU_PUBLISH_HZ),
+        cb_game_rv));
+
+    // Executor: 3 timer handles (imu_raw, mag, game_rv)
+    RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));
     RCCHECK(rclc_executor_add_timer(&executor, &timer_imu));
     RCCHECK(rclc_executor_add_timer(&executor, &timer_mag));
+    RCCHECK(rclc_executor_add_timer(&executor, &timer_game_rv));
 
     // Init messages
     sensor_msgs__msg__Imu__init(&msg_imu);
     sensor_msgs__msg__MagneticField__init(&msg_mag);
+    sensor_msgs__msg__Imu__init(&msg_game_rv);
 
     // Frame IDs
     msg_imu.header.frame_id.data     = frame_id_buf;
@@ -191,11 +232,19 @@ static void setup_normal_mode() {
     msg_mag.header.frame_id.data     = frame_id_buf;
     msg_mag.header.frame_id.size     = strlen(frame_id_buf);
     msg_mag.header.frame_id.capacity = sizeof(frame_id_buf);
+    msg_game_rv.header.frame_id.data     = frame_id_buf;
+    msg_game_rv.header.frame_id.size     = strlen(frame_id_buf);
+    msg_game_rv.header.frame_id.capacity = sizeof(frame_id_buf);
 
-    // Unknown covariance: first diagonal element = -1 signals "unknown" to ROS
-    msg_imu.orientation_covariance[0]         = -1.0;
+    // msg_imu orientation_covariance: set dynamically in cb_imu (encodes heading_accuracy_rad)
+    // angular_velocity and linear_acceleration: unknown (signal with -1 at [0])
     msg_imu.angular_velocity_covariance[0]    = -1.0;
     msg_imu.linear_acceleration_covariance[0] = -1.0;
+
+    // Game RV: no heading accuracy available; signal all covariances unknown
+    msg_game_rv.orientation_covariance[0]         = -1.0;
+    msg_game_rv.angular_velocity_covariance[0]    = -1.0;
+    msg_game_rv.linear_acceleration_covariance[0] = -1.0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
