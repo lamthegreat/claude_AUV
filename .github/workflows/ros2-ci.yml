@@ -53,14 +53,18 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           rosdep install --from-paths "${ROS_WS}/src" --ignore-src --rosdistro "${ROS_DISTRO}" -y
 
       - name: Build workspace
         shell: bash
         run: |
           set -euxo pipefail
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           cd "${ROS_WS}"
           colcon build --symlink-install --event-handlers console_cohesion+
 
@@ -68,9 +72,13 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           cd "${ROS_WS}"
+          set +u
           source install/setup.bash
+          set -u
           colcon test --event-handlers console_cohesion+
           colcon test-result --verbose
 
@@ -82,7 +90,7 @@ jobs:
           if-no-files-found: warn
           path: |
             ros2_ws/log
-            ros2_ws/build/*/test_results
+            ros2_ws/build
 
   sim_smoke:
     name: Sim Smoke
@@ -119,14 +127,18 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           rosdep install --from-paths "${ROS_WS}/src" --ignore-src --rosdistro "${ROS_DISTRO}" -y
 
       - name: Build packages needed for smoke test
         shell: bash
         run: |
           set -euxo pipefail
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           cd "${ROS_WS}"
           colcon build --symlink-install --packages-up-to auv_sim --event-handlers console_cohesion+
 
@@ -137,9 +149,13 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p "${GITHUB_WORKSPACE}/ci_artifacts/sim"
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           cd "${ROS_WS}"
+          set +u
           source install/setup.bash
+          set -u
           ros2 launch auv_sim allocator_smoke.launch.py \
             2>&1 | tee "${GITHUB_WORKSPACE}/ci_artifacts/sim/allocator_smoke.log"
 
@@ -149,9 +165,13 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p "${GITHUB_WORKSPACE}/ci_artifacts/sim/bag"
+          set +u
           source /opt/ros/${ROS_DISTRO}/setup.bash
+          set -u
           cd "${ROS_WS}"
+          set +u
           source install/setup.bash
+          set -u
           ros2 launch auv_sim allocator_smoke.launch.py \
             record_bag:=true \
             bag_output_dir:="${GITHUB_WORKSPACE}/ci_artifacts/sim/bag/allocator_smoke_failure_bag" \
