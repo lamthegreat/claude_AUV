@@ -10,6 +10,7 @@ static constexpr uint32_t INTERVAL_GYRO_US  =  5000;  // 200 Hz
 static constexpr uint32_t INTERVAL_ACCEL_US =  5000;  // 200 Hz
 static constexpr uint32_t INTERVAL_MAG_US   = 10000;  // 100 Hz
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 Bno085Driver::Bno085Driver() : _bno(-1) {
     // -1 passed to Adafruit_BNO08x means "no reset pin managed by library"
@@ -42,6 +43,11 @@ void Bno085Driver::_enableReports() {
     // ARVR Stabilized Rotation Vector — best for heading in dynamic environments.
     // Uses accelerometer + gyroscope + magnetometer with drift correction.
     _bno.enableReport(SH2_ARVR_STABILIZED_RV,    INTERVAL_RV_US);
+
+    // Game Rotation Vector — 6-DOF (gyro + accel only, no magnetometer).
+    // Immune to magnetic interference from motors/ESCs.
+    // Heading is relative (arbitrary zero at power-on), not absolute north.
+    _bno.enableReport(SH2_GAME_ROTATION_VECTOR,   INTERVAL_RV_US);
 
     // Calibrated gyroscope — bias-corrected angular rate
     _bno.enableReport(SH2_GYROSCOPE_CALIBRATED,   INTERVAL_GYRO_US);
@@ -101,6 +107,14 @@ void Bno085Driver::_handleEvent(const sh2_SensorValue_t& ev) {
         _data.mag_y    = ev.un.magneticField.y;
         _data.mag_z    = ev.un.magneticField.z;
         _data.calib_mag = ev.status & 0x03;
+        break;
+
+    case SH2_GAME_ROTATION_VECTOR:
+        _data.game_quat_real = ev.un.gameRotationVector.real;
+        _data.game_quat_i    = ev.un.gameRotationVector.i;
+        _data.game_quat_j    = ev.un.gameRotationVector.j;
+        _data.game_quat_k    = ev.un.gameRotationVector.k;
+        _data.calib_game_rv  = ev.status & 0x03;
         break;
 
     default:

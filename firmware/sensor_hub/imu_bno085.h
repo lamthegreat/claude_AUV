@@ -6,6 +6,12 @@
 
 #include "micro_ros_config.h"
 
+// BNO085 datasheet typical pitch/roll accuracy: ~1° static, ~2° dynamic.
+// Using the dynamic (conservative) spec: (2° × π/180)² ≈ 1.22e-3 rad²
+// Use for orientation_covariance roll [0] and pitch [4] diagonal elements.
+// Yaw [8] is set per-cycle from the real-time heading_accuracy_rad report.
+static constexpr double PITCH_ROLL_VAR_RAD2 = 1.22e-3;  // (2° RMS)²
+
 // ─────────────────────────────────────────────────────────────────────────────
 // ImuData — snapshot of all sensor readings from one poll cycle
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,9 +38,19 @@ struct ImuData {
     float mag_y;
     float mag_z;
 
+    // Game Rotation Vector quaternion (ROS convention: x,y,z,w)
+    // 6-DOF: gyro + accel only — no magnetometer, no absolute heading reference.
+    // Immune to magnetic interference from motors/ESCs. Use as fallback when
+    // heading_accuracy_rad is large or calib_mag < 2.
+    float game_quat_i;   // x
+    float game_quat_j;   // y
+    float game_quat_k;   // z
+    float game_quat_real; // w
+
     // Per-sensor calibration accuracy (0=unreliable, 1=low, 2=med, 3=high)
     // These come from the sh2_SensorValue_t.status field on each report.
-    uint8_t calib_rv;    // ARVR stabilized rotation vector
+    uint8_t calib_rv;       // ARVR stabilized rotation vector (9-DOF)
+    uint8_t calib_game_rv;  // Game rotation vector (6-DOF)
     uint8_t calib_gyro;
     uint8_t calib_accel;
     uint8_t calib_mag;

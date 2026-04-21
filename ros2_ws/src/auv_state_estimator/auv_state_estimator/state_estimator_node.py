@@ -50,6 +50,12 @@ class StateEstimatorNode(Node):
         self._latest_imu: ImuExtended | None = None
         self._latest_depth: DepthStamped | None = None
 
+        # IMU source selection thresholds
+        # Switch to 6-DOF Game RV when heading uncertainty exceeds ~20° or mag is poor.
+        self._heading_accuracy_threshold_rad = 0.35  # ~20 degrees
+        self._mag_calib_min = 2
+        self._using_9dof: bool | None = None  # None = not yet decided (for first-log)
+
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
@@ -88,7 +94,32 @@ class StateEstimatorNode(Node):
         state.header.stamp = now
         state.header.frame_id = self._odom_frame
 
-        state.pose.orientation = imu.orientation
+        # Select orientation source based on magnetometer reliability.
+        # 9-DOF (ARVR): absolute heading, mag-referenced — prefer when mag is good.
+        # 6-DOF (Game RV): relative heading, mag-immune — fallback when mag is noisy.
+        use_9dof = self._should_use_9dof(
+            imu.calibration_mag,
+            imu.heading_accuracy_rad,
+            self._mag_calib_min,
+            self._heading_accuracy_threshold_rad,
+        )
+        orientation = imu.orientation if use_9dof else imu.game_rv_orientation
+
+        if use_9dof != self._using_9dof:
+            if use_9dof:
+                self.get_logger().info(
+                    'IMU source: 9-DOF ARVR (mag reliable, '
+                    f'heading_accuracy={imu.heading_accuracy_rad:.3f} rad)'
+                )
+            else:
+                self.get_logger().info(
+                    'IMU source: 6-DOF Game RV (mag unreliable — '
+                    f'calib_mag={imu.calibration_mag}, '
+                    f'heading_accuracy={imu.heading_accuracy_rad:.3f} rad)'
+                )
+            self._using_9dof = use_9dof
+
+        state.pose.orientation = orientation
         state.twist.angular.x = imu.angular_velocity.x
         state.twist.angular.y = imu.angular_velocity.y
         state.twist.angular.z = imu.angular_velocity.z
@@ -120,8 +151,26 @@ class StateEstimatorNode(Node):
         tf.transform.translation.x = state.pose.position.x
         tf.transform.translation.y = state.pose.position.y
         tf.transform.translation.z = state.pose.position.z
-        tf.transform.rotation = imu.orientation
+        tf.transform.rotation = orientation
         self._tf_broadcaster.sendTransform(tf)
+
+    @staticmethod
+    def _should_use_9dof(
+        calibration_mag: int,
+        heading_accuracy_rad: float,
+        mag_calib_min: int,
+        heading_accuracy_threshold_rad: float,
+    ) -> bool:
+        """Return True when the 9-DOF ARVR source is reliable enough to use.
+
+        Prefers 9-DOF (absolute heading, mag-referenced) when the magnetometer
+        is well-calibrated AND the BNO085 heading uncertainty is below the
+        threshold.  Falls back to 6-DOF Game RV (mag-immune) otherwise.
+        """
+        return (
+            calibration_mag >= mag_calib_min
+            and heading_accuracy_rad < heading_accuracy_threshold_rad
+        )
 
 
 def main(args=None):
