@@ -23,6 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'allocator_smoke_runner = auv_sim.allocator_smoke_runner:main',
+            'bno085_imu_sim_node = auv_sim.bno085_imu_sim_node:main',
+            'imu_state_smoke_runner = auv_sim.imu_state_smoke_runner:main',
         ],
     },
 )

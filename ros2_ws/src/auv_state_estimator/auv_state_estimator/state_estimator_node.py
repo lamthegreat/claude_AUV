@@ -49,6 +49,8 @@ class StateEstimatorNode(Node):
         # Latest sensor readings
         self._latest_imu: ImuExtended | None = None
         self._latest_depth: DepthStamped | None = None
+        self._saw_first_imu = False
+        self._published_first_state = False
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -72,6 +74,9 @@ class StateEstimatorNode(Node):
 
     def _imu_callback(self, msg: ImuExtended):
         self._latest_imu = msg
+        if not self._saw_first_imu:
+            self._saw_first_imu = True
+            self.get_logger().info('First ImuExtended sample received by state estimator.')
 
     def _depth_callback(self, msg: DepthStamped):
         self._latest_depth = msg
@@ -104,6 +109,9 @@ class StateEstimatorNode(Node):
         state.control_mode = AuvState.MANUAL
 
         self._pub_state.publish(state)
+        if not self._published_first_state:
+            self._published_first_state = True
+            self.get_logger().info('Published first /auv/state/auv_state estimate from simulated IMU input.')
 
         # --- PoseStamped ---
         pose_msg = PoseStamped()
@@ -133,7 +141,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

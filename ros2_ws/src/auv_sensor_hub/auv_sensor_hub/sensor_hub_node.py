@@ -38,6 +38,8 @@ class SensorHubNode(Node):
         ns = self.get_parameter('namespace').value
         self._imu_timeout_s = self.get_parameter('imu_timeout_s').value
         self._last_imu_stamp = None
+        self._saw_raw_imu = False
+        self._saw_extended_imu = False
 
         qos = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -66,8 +68,18 @@ class SensorHubNode(Node):
 
     def _imu_raw_callback(self, msg: Imu):
         self._last_imu_stamp = self.get_clock().now()
+        if not self._saw_raw_imu:
+            self._saw_raw_imu = True
+            self.get_logger().info(
+                f'First IMU raw sample received on /{self.get_parameter("namespace").value}/sensors/imu/raw.'
+            )
 
     def _imu_extended_callback(self, msg: ImuExtended):
+        if not self._saw_extended_imu:
+            self._saw_extended_imu = True
+            self.get_logger().info(
+                f'First IMU extended sample received on /{self.get_parameter("namespace").value}/sensors/imu/extended.'
+            )
         if msg.fully_calibrated:
             self.get_logger().debug('BNO085 fully calibrated.')
         else:
@@ -97,7 +109,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':

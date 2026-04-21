@@ -13,9 +13,14 @@
   <depend>rclpy</depend>
   <depend>launch</depend>
   <depend>launch_ros</depend>
+  <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>auv_msgs</depend>
   <exec_depend>auv_motor_controller</exec_depend>
+  <exec_depend>auv_state_estimator</exec_depend>
+  <exec_depend>auv_sensor_hub</exec_depend>
+  <exec_depend>auv_bringup</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
