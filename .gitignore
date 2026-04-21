@@ -1,0 +1,39 @@
+# ROS2 colcon build artifacts
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+*.so
+
+# Arduino / Teensy build cache
+firmware/**/.pio/
+firmware/**/.arduino15/
+firmware/**/build/
+firmware/**/*.hex
+firmware/**/*.elf
+*.o
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / credentials
+*.env
+*.pem
+*.key
+
+# Logs
+*.log
