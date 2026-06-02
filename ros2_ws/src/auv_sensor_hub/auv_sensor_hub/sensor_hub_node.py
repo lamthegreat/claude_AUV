@@ -1,5 +1,5 @@
 """
-Sensor Hub Bridge Node
+Sensor Hub Bridge Node.
 
 Pi-side ROS2 bridge for the Teensy 4.1 sensor hub (microROS node).
 Subscribes to raw sensor data published by the Teensy over microROS,
@@ -19,12 +19,11 @@ TODO (Phase 2 - Sensor Hub Firmware):
   - Add IMU calibration service to trigger BNO085 save
 """
 
+from auv_msgs.msg import ImuExtended
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Imu
-from auv_msgs.msg import ImuExtended
 
 
 class SensorHubNode(Node):

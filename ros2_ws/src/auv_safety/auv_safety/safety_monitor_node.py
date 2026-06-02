@@ -1,5 +1,5 @@
 """
-Safety Monitor Node
+Safety Monitor Node.
 
 Monitors system health and triggers emergency surface if critical conditions occur:
   - IMU data timeout (sensor hub lost)
@@ -19,12 +19,11 @@ TODO (Phase 7 - Safety):
   - Add leak detection input (GPIO or dedicated topic)
 """
 
+from auv_msgs.msg import AuvState
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy, HistoryPolicy
-
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool
-from auv_msgs.msg import AuvState
 
 
 class SafetyMonitorNode(Node):

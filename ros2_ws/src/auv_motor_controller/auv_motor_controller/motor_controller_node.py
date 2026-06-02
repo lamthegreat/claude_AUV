@@ -1,5 +1,5 @@
 """
-Motor Controller Bridge Node
+Motor Controller Bridge Node.
 
 Subscribes to body-frame wrench commands from the controller,
 runs the Thruster Allocation Matrix to compute per-thruster PWM values,
@@ -24,17 +24,16 @@ TODO (Phase 4 - Motor Controller Bridge):
 """
 
 import os
-import yaml
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
-
-from std_msgs.msg import Bool
-from geometry_msgs.msg import WrenchStamped
-from auv_msgs.msg import ThrusterCommand
-from auv_msgs.srv import ArmThrusters, SetThrusterAllocation
 
 from auv_motor_controller.thruster_allocator import ThrusterAllocator
+from auv_msgs.msg import ThrusterCommand
+from auv_msgs.srv import ArmThrusters, SetThrusterAllocation
+from geometry_msgs.msg import WrenchStamped
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
+from std_msgs.msg import Bool
+import yaml
 
 
 class MotorControllerNode(Node):
