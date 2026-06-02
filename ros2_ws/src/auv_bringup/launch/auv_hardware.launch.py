@@ -1,5 +1,5 @@
 """
-Hardware-Only Bringup
+Hardware-Only Bringup.
 
 Launches sensor hub and motor controller bridge nodes.
 Use this during initial hardware bring-up before adding the autonomy stack.

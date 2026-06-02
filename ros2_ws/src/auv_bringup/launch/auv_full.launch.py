@@ -1,5 +1,5 @@
 """
-Full AUV Bringup
+Full AUV Bringup.
 
 Launches all nodes: hardware bridges, state estimator, controller,
 safety monitor, and mission planner.
@@ -8,9 +8,9 @@ The microROS agents must be started separately before launching this file.
 See CLAUDE.md for the agent commands.
 """
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 

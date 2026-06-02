@@ -7,4 +7,11 @@ install(DIRECTORY launch config urdf
   DESTINATION share/${PROJECT_NAME}
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_flake8 REQUIRED)
+  find_package(ament_cmake_pep257 REQUIRED)
+  ament_flake8()
+  ament_pep257()
+endif()
+
 ament_package()
