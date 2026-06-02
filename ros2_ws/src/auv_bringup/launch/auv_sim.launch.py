@@ -1,5 +1,5 @@
 """
-Simulation Bringup (Placeholder)
+Simulation Bringup (Placeholder).
 
 TODO: Add Gazebo / simulation environment when available.
 For now, launches the autonomy stack with ROS_DOMAIN_ID isolation.
