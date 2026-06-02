@@ -69,12 +69,9 @@ class ThrusterAllocator:
         """
         Convert a body-frame wrench to PWM values for each thruster.
 
-        Args:
-            wrench: [Fx, Fy, Fz, Mx, My, Mz] in Newtons and Newton-metres
-
-        Returns:
-            List of PWM values in microseconds, one per thruster.
-            All values are clamped to [PWM_MIN, PWM_MAX].
+        The wrench is [Fx, Fy, Fz, Mx, My, Mz] in Newtons and Newton-metres.
+        Returns a list of PWM values in microseconds, one per thruster, with
+        all values clamped to [PWM_MIN, PWM_MAX].
         """
         if not self.is_loaded:
             raise RuntimeError('ThrusterAllocator not loaded. Call load_config() first.')
