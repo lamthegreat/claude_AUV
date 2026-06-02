@@ -1,5 +1,5 @@
 """
-State Estimator Node
+State Estimator Node.
 
 Fuses IMU orientation and depth measurements into a unified AUV state estimate.
 Publishes to /auv/state/auv_state and broadcasts the odom→base_link TF transform.
@@ -23,14 +23,12 @@ TODO (Phase 5 - State Estimator):
   - Add dead-reckoning from IMU accelerometer (with drift caveats)
 """
 
+from auv_msgs.msg import AuvState, DepthStamped, ImuExtended
+from geometry_msgs.msg import PoseStamped, TransformStamped
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-
-from geometry_msgs.msg import PoseStamped, TransformStamped
+from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 from tf2_ros import TransformBroadcaster
-
-from auv_msgs.msg import ImuExtended, DepthStamped, AuvState
 
 
 class StateEstimatorNode(Node):

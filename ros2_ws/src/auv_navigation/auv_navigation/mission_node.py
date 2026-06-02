@@ -1,5 +1,5 @@
 """
-Mission Node
+Mission Node.
 
 Executes YAML-defined mission sequences by sending action goals to
 the Dive and NavigateTo action servers (future), or by publishing
@@ -13,9 +13,9 @@ TODO (Phase 9 - Navigation):
   - Monitor AuvState for safety triggers
 """
 
+from geometry_msgs.msg import PoseStamped
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
 
 
 class MissionNode(Node):

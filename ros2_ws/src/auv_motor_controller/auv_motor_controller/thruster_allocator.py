@@ -1,5 +1,5 @@
 """
-Thruster Allocation Matrix (TAM) Engine
+Thruster Allocation Matrix (TAM) Engine.
 
 Converts a body-frame wrench [Fx, Fy, Fz, Mx, My, Mz] into per-thruster
 normalized thrust commands using the Moore-Penrose pseudoinverse of the
@@ -12,8 +12,10 @@ Usage:
 """
 
 from __future__ import annotations
-import numpy as np
+
 from typing import List
+
+import numpy as np
 
 
 class ThrusterAllocator:

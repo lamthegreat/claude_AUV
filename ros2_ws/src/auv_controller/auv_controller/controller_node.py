@@ -1,5 +1,5 @@
 """
-AUV Controller Node
+AUV Controller Node.
 
 Implements cascaded PID controllers for depth, heading, and velocity.
 Converts operator setpoints into body-frame WrenchStamped commands
@@ -30,13 +30,11 @@ TODO (Phase 6 - Controller):
   - Add feed-forward from setpoint twist in MANUAL mode
 """
 
-import math
-import rclpy
-from rclpy.node import Node
-
-from geometry_msgs.msg import WrenchStamped, PoseStamped, TwistStamped
 from auv_msgs.msg import AuvState
 from auv_msgs.srv import SetControlMode
+from geometry_msgs.msg import PoseStamped, TwistStamped, WrenchStamped
+import rclpy
+from rclpy.node import Node
 
 
 class ControllerNode(Node):

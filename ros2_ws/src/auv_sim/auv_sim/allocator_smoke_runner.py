@@ -13,18 +13,16 @@ locally and in CI.
 
 from __future__ import annotations
 
-import math
-import sys
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import auto, Enum
+import math
 
+from auv_msgs.msg import ThrusterCommand
+from auv_msgs.srv import ArmThrusters
+from geometry_msgs.msg import WrenchStamped
 import rclpy
 from rclpy.node import Node
 from rclpy.task import Future
-
-from geometry_msgs.msg import WrenchStamped
-from auv_msgs.msg import ThrusterCommand
-from auv_msgs.srv import ArmThrusters
 
 
 class Phase(Enum):
@@ -118,7 +116,8 @@ class AllocatorSmokeRunner(Node):
 
         if self._phase == Phase.WAIT_FOR_SERVICE:
             if self._arm_client.wait_for_service(timeout_sec=0.0):
-                self._transition(Phase.PREARM_CHECK, 'Arm service available. Starting pre-arm check.')
+                self._transition(
+                    Phase.PREARM_CHECK, 'Arm service available. Starting pre-arm check.')
             return
 
         if self._phase == Phase.PREARM_CHECK:
@@ -157,7 +156,8 @@ class AllocatorSmokeRunner(Node):
                 if not self._observations.saw_armed_active:
                     self._fail('Did not observe active thruster output after arming.')
                     return
-                self._transition(Phase.TIMEOUT_CHECK, 'Stopping wrench publishes to verify timeout safeing.')
+                self._transition(
+                    Phase.TIMEOUT_CHECK, 'Stopping wrench publishes to verify timeout safeing.')
             return
 
         if self._phase == Phase.TIMEOUT_CHECK:
