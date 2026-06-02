@@ -37,3 +37,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local backlog staging input for scripts/setup_github_backlog.py.
+# GitHub (issues/milestones/Project board) is the source of truth; this YAML
+# is a local-only seed for creating NEW issues and is intentionally untracked.
+docs/backlog.yaml
